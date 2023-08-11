@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Find Furthest</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      #container {
+        width: 100%;
+        text-align: center;
+        padding: 20px;
+      }
+
+      #header {
+        font-size: 2em;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      #explanation {
+        font-size: 1.2em;
+        margin-bottom: 30px;
+      }
+
+      #explainBtn {
+        background-color: #007bff;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        outline: none;
+        color: #ffffff;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        line-height: 30px;
+        transition: 0.3s;
+      }
+
+      #explainBtn:hover {
+        background-color: #0056b3; /* Slightly darker blue for hover effect */
+      }
+
+      #result-explanation {
+        max-height: 80%;
+        display: none;
+      }
+      #inputBox {
+        font-size: 24px;
+        width: 80%;
+        max-width: 600px;
+        padding: 12px;
+        margin: 0 auto;
+      }
+
+      #result {
+        font-size: 3em;
+        margin-top: 20px;
+        color: #444;
+        min-height: 1.2em; /* Ensures the result div always occupies space */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="header">Find the Furthest Number</div>
+      <div id="explanation">
+        Enter three numbers in any supported format to find the furthest number.
+      </div>
+      <input
+        type="text"
+        id="inputBox"
+        oninput="processInput()"
+        placeholder="Enter 3 numbers..."
+      />
+      <button
+        id="explainBtn"
+        onclick="displayExplanation()"
+        title="Click to see the explanation for the result"
+      >
+        ℹ
+      </button>
+
+      <div id="result"></div>
+      <pre id="result-explanation" style="margin-top: 20px"></pre>
+    </div>
+
+    <script>
+      function findFurthest(inputVal) {
+        let num1 = 0,
+          num2 = 0,
+          num3 = 0;
+
+        if (
+          (!isNaN(inputVal) && inputVal >= 100 && inputVal <= 999) ||
+          (typeof inputVal === "string" &&
+            inputVal.length === 3 &&
+            !isNaN(inputVal))
+        ) {
+          inputVal = parseInt(inputVal, 10);
+          num3 = inputVal % 10;
+          num2 = Math.floor(inputVal / 10) % 10;
+          num1 = Math.floor(inputVal / 100);
+        } else if (
+          typeof inputVal === "string" &&
+          (inputVal.includes(",") || inputVal.includes("."))
+        ) {
+          const nums = inputVal.split(/[,.]/);
+          num1 = parseInt(nums[0], 10);
+          num2 = parseInt(nums[1], 10);
+          num3 = parseInt(nums[2], 10);
+        } else {
+          return; // Return if not a valid format
+        }
+
+        let highest = Math.max(num1, num2, num3);
+        let lowest = Math.min(num1, num2, num3);
+        let remaining = num1 + num2 + num3 - highest - lowest;
+
+        // Display the explanation in the div
+        const explanation = explainFurthest(num1, num2, num3);
+        // Display the explanation in the div
+        document.getElementById("result-explanation").textContent = explanation;
+
+        if (Math.abs(highest - remaining) > Math.abs(lowest - remaining)) {
+          return highest;
+        } else {
+          return lowest;
+        }
+      }
+
+      function processInput() {
+        const inputVal = document.getElementById("inputBox").value;
+        const result = findFurthest(inputVal);
+        if (result) {
+          document.getElementById("result").textContent = result;
+        } else {
+          document.getElementById("result").textContent = "";
+        }
+      }
+
+      function explainFurthest(num1, num2, num3) {
+        // Determine the highest, lowest, and remaining numbers.
+        let highest = Math.max(num1, num2, num3);
+        let lowest = Math.min(num1, num2, num3);
+        let remaining = num1 + num2 + num3 - highest - lowest;
+
+        // Calculate the distances.
+        let distanceToHighest = Math.abs(highest - remaining);
+        let distanceToLowest = Math.abs(lowest - remaining);
+
+        // Construct the explanation.
+        let explanation = `Given the numbers are ${num1}, ${num2}, and ${num3}:\n\n`;
+        explanation += "STEP 1:\n\n";
+        explanation += `Highest number: ${highest}\n`;
+        explanation += `Lowest number: ${lowest}\n\n`;
+        explanation += "STEP 2:\n\n";
+        explanation += `Remaining number: ${remaining}\n`;
+        explanation += `Distance between ${highest} and ${remaining} = ${distanceToHighest}\n`;
+        explanation += `Distance between ${lowest} and ${remaining} = ${distanceToLowest}\n\n`;
+        explanation += "STEP 3:\n";
+        if (distanceToHighest > distanceToLowest) {
+          explanation += `Since ${distanceToHighest} (the distance between ${highest} and ${remaining}) is greater than ${distanceToLowest} (the distance between ${lowest} and ${remaining}), \n\nthe number that is numerically further from the remaining number is ${highest}.\n\n`;
+        } else {
+          explanation += `Since ${distanceToLowest} (the distance between ${lowest} and ${remaining}) is greater than ${distanceToHighest} (the distance between ${highest} and ${remaining}), \n\nthe number that is numerically further from the remaining number is ${lowest}.\n\n`;
+        }
+
+        explanation += `Answer: ${
+          distanceToHighest > distanceToLowest ? highest : lowest
+        }`;
+
+        return explanation;
+      }
+      function displayExplanation() {
+        const re = document.getElementById("result-explanation");
+        re.style.display === "block"
+          ? (re.style.display = "none")
+          : (re.style.display = "block");
+      }
+    </script>
+
+    <!-- For PWA: Add a service worker and manifest file -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/service-worker.js").then(
+            function (registration) {
+              console.log(
+                "Service Worker registered with scope: ",
+                registration.scope
+              );
+            },
+            function (err) {
+              console.log("Service Worker registration failed: ", err);
+            }
+          );
+        });
+      }
+    </script>
+  </body>
+</html>
